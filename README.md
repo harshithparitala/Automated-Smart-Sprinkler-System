@@ -574,7 +574,7 @@ Working Description
 
 ---
 
-## *System Architecture Diagram*
+## *System Architecture *
 
 1. *ESP32*: 
    - Handles *all MQTT communication* between the system modules and cloud.

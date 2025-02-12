@@ -510,6 +510,93 @@ Working Description
 ---
 
 
+## *Project Overview: Efficient Sprinkler System with Cloud & Autonomous Control*
+
+### *System Components*
+1. *ESP32*: 
+   - Acts as the *communication hub* between modules, RISC-V, and the cloud.
+   - Retrieves *real-time weather data* from a weather API (such as OpenWeather).
+   - Handles all communication between the various *nodes* (sensor modules, RISC-V, cloud) via *MQTT*.
+   - Publishes and subscribes to relevant MQTT topics for controlling pumps, retrieving sensor data, and sending commands.
+
+2. *RISC-V (VSDSquadron)*:
+   - Functions as the *brain* of the system, processing sensor data and weather data.
+   - Runs a basic *Machine Learning algorithm* to decide whether to turn on or off specific sprinkler pumps based on moisture levels and weather conditions (e.g., rainy day, high moisture → turn off).
+   - Receives data from the ESP32 via UART and sends back optimized control commands for pumps.
+
+3. *Sensor Modules (Water Pumps, Moisture Sensors)*:
+   - *Moisture Sensors*: These modules send moisture readings to the ESP32 every 10 seconds. The readings indicate soil moisture levels, which help in decision-making.
+   - *Water Pumps (DC motors)*: Connected to relays, these modules are turned on or off based on the decision from the RISC-V processor.
+   - *Relays*: These control the activation of the water pumps.
+
+4. *Mobile App (MIT App Inventor)*:
+   - Visualizes the data in *real-time* by fetching updates from the cloud (Firebase).
+   - *Displays moisture levels* of each sensor module (quadrants of a 2x2 grid).
+   - *Manual control option* allows the user to override the automated system and turn pumps on or off for specific modules.
+   - *Status display* indicates whether the water pump is on, off, or manually controlled.
+
+5. *Cloud (Firebase)*:
+   - Acts as the data storage and real-time data sync platform between the ESP32 and the mobile app.
+   - Stores *moisture sensor data* and *sprinkler control statuses*.
+   - Allows real-time data synchronization for *live updates* on the mobile app.
+
+---
+
+## *Project Flow*
+
+### *1. Data Collection and Communication*
+- *Moisture Data*: The moisture sensors send data to the ESP32 every 10 seconds. This data includes the current moisture level of each field square.
+- *Weather Data: ESP32 fetches **real-time weather data* from a weather API, such as OpenWeather, to determine whether conditions like rainfall, sunny weather, or cloudy conditions are present.
+- The ESP32 communicates with the *RISC-V* board via *UART*, sending weather data and moisture sensor values for processing.
+
+### *2. Decision Making on the RISC-V Board*
+- *Machine Learning Algorithm*: The RISC-V board processes the received weather and moisture data. It runs an algorithm (simple rule-based or ML-based) to decide whether the irrigation system should be activated.
+  - *Example Decision Logic*:
+    - If *rainy* and moisture levels are already *high, the pump is **turned off*.
+    - If *sunny* or *cloudy, and moisture is **low, the pump is **turned on*.
+- Once the RISC-V makes the decision, it sends a *command* back to the ESP32 to turn on or off the respective pump.
+
+### *3. Cloud Communication and Real-Time Updates*
+- ESP32 publishes the *control commands* to an *MQTT topic* and stores the *moisture readings* and *pump statuses* in *Firebase*.
+- The mobile app, using *Firebase* as the backend, *fetches real-time data* and displays:
+  - *Moisture levels* (represented in 4 quadrants for each module).
+  - The *current status* of each pump: whether it's *on, **off, or **being manually controlled*.
+- *Manual Override: The mobile app allows the user to send commands (ON/OFF) to the ESP32, which **overrides automated decisions*.
+
+### *4. Control Command Flow*
+- *User Command via App: When the user interacts with the app to **manually control* any module (turning the pump ON or OFF), this command is published to an MQTT topic.
+  - *Overrides automation*: The manual command takes priority and directly affects the corresponding water pump.
+
+### *5. Real-Time Monitoring*
+- The *mobile app* continuously fetches updated data from *Firebase* and displays it in real-time.
+  - Visual representations like *colored circles* or *indicators* (green for "on", red for "off", yellow for "manual control") show the *status* of each module's pump.
+  - The app gives *status feedback* to the user based on the data from Firebase (e.g., "Moisture Level: 70%").
+
+---
+
+## *System Architecture Diagram*
+
+1. *ESP32*: 
+   - Handles *all MQTT communication* between the system modules and cloud.
+   - Retrieves *weather data* from the API and sends it to the RISC-V.
+   - Publishes *status and moisture data* to *Firebase*.
+   - Receives *manual control commands* from the mobile app and sends them to the RISC-V.
+
+2. *RISC-V*:
+   - Processes incoming *weather data* and *moisture data*.
+   - Makes decisions based on predefined rules (or ML algorithm).
+   - Sends back *ON/OFF commands* to the ESP32 to control water pumps.
+
+3. *Mobile App*:
+   - Retrieves data from *Firebase* in *real-time*.
+   - Displays *moisture levels* and *pump statuses*.
+   - Allows the user to *manually control* the pumps (override automated decisions).
+
+4. *Cloud (Firebase)*:
+   - *Stores real-time data*: Moisture readings, pump status, etc.
+   - *Syncs data* between ESP32, mobile app, and the backend.
+
+
 
 Demostration :
 -
